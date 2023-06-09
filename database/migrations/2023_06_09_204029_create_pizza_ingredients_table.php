@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('pizza_ingredients', function (Blueprint $table) {
+        Schema::create('default_pizzas_ingredients', function (Blueprint $table) {
             $table->id();
             $table->foreignId('pizza_id');
             $table->foreignId('ingredient_id');
