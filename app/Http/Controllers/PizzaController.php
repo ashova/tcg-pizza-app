@@ -2,65 +2,79 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StorePizzaRequest;
-use App\Http\Requests\UpdatePizzaRequest;
+use App\Http\Repositories\PizzaRepository;
+use App\Http\Resources\PizzaResource;
+use Illuminate\Http\Request;
 use App\Models\Pizza;
+
 
 class PizzaController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
+    public function __construct(
+        protected PizzaRepository $pizzaRepository
+    ){}
+
+    public function getPizzas(Request $request)
+    {   
+        /** @var Pizza[] $pizzas */
+        $pizzas = $this->pizzaRepository->getAllPizzas();
+
+        return response()->json(PizzaResource::collection($pizzas));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function getPizza(Request $request)
     {
-        //
+        $request->validate([
+            'id' => 'required, int',
+        ]);
+
+        $pizza = null;
+        try {
+            /** @var Pizza $pizza */
+            $pizza = $this->pizzaRepository->getPizzaById($request->id);
+
+            $status = 200;
+            $message = 'OK';
+        } catch (\Throwable $e) {
+            $status = $e->getCode();
+            $message = $e->getMessage();
+        } 
+
+        return response()->json([
+            'data' => $pizza ? PizzaResource::make($pizza) : null,
+            'message' => $message
+        ], $status);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StorePizzaRequest $request)
+    public function add(Request $request)
     {
-        //
+        $request->validate([
+            'name' => 'required',
+            'price' => 'required|decimal:2',
+
+            'description' => 'nullable|string',
+        ]);
+
+        $pizza = new Pizza();
+        $pizza
+            ->setName($request->name)
+            ->setPrice($request->price)
+            ->setDescription($request->description);
+
+        $this->pizzaRepository->createPizza($pizza);
+
+        return redirect()->route('pizzas.index');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Pizza $pizza)
+    public function remove(Request $request)
     {
-        //
+        $request->validate([
+            'id' => 'required, int',
+        ]);
+
+        $this->pizzaRepository->delete($request->id);
+        
+        return response()->json(null, 204);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Pizza $pizza)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdatePizzaRequest $request, Pizza $pizza)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Pizza $pizza)
-    {
-        //
-    }
 }

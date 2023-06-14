@@ -2,65 +2,28 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StorePizzaIngredientRequest;
-use App\Http\Requests\UpdatePizzaIngredientRequest;
-use App\Models\PizzaIngredient;
+use App\Models\Pizza;
+use App\Models\Ingredient;
+use Illuminate\Http\Request;
 
 class PizzaIngredientController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function add(Request $request, Pizza $pizza)
     {
-        //
+        $request->validate([
+            'ingredient_id' => 'required|exists:ingredients,id',
+            'order' => 'required|integer|min:1',
+        ]);
+
+        $pizza->ingredients()->attach($request->input('ingredient_id'), ['order' => $request->input('order')]);
+
+        return redirect()->route('pizzas.index');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function destroy(Pizza $pizza, Ingredient $ingredient)
     {
-        //
-    }
+        $pizza->ingredients()->detach($ingredient);
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StorePizzaIngredientRequest $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(PizzaIngredient $pizzaIngredient)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(PizzaIngredient $pizzaIngredient)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdatePizzaIngredientRequest $request, PizzaIngredient $pizzaIngredient)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(PizzaIngredient $pizzaIngredient)
-    {
-        //
+        return redirect()->route('pizzas.index');
     }
 }
