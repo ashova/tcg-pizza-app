@@ -1,7 +1,17 @@
-import './bootstrap';
+require('./bootstrap');
 
-import {createApp} from 'vue'
+// Import Vue and Vue Router
+import Vue from 'vue';
+import router from './router';
 
-import App from './App.vue'
+// Import the App component
+import App from '../App.vue';
 
-createApp(App).mount("#app")
+const app = new Vue({
+  el: '#app',
+  router,
+  components: {
+    App,
+  },
+  render: h => h(App),
+});
